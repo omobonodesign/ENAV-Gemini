@@ -76,16 +76,16 @@ set_page_style()
 # --- Dati Chiave Estratti (da Testo e PDF) ---
 TICKER = "ENAV.MI" # Assumendo Borsa Italiana
 NOME_SOCIETA = "ENAV S.p.A."
-ULTIMO_DPS_PAGATO_VAL = 0.2300 # Relativo all'esercizio 2023 [cite: 1]
+ULTIMO_DPS_PAGATO_VAL = 0.2300 # Relativo all'esercizio 2023
 ANNO_ULTIMO_DPS = 2023
-DPS_PROPOSTO_VAL = 0.2700 # Per esercizio 2024, pagato nel 2025 [cite: 1]
+DPS_PROPOSTO_VAL = 0.2700 # Per esercizio 2024, pagato nel 2025
 ANNO_DPS_PROPOSTO = 2024
-YIELD_APPROX_PROPOSTO = 7.0 # Basato sul DPS proposto di 0.27 [cite: 1]
-POLITICA_PAYOUT = ">= 80% FCF Normalizzato" # [cite: 1]
-LEVA_FINE_2024 = 0.8 # Debt/EBITDA [cite: 1]
-FCF_2024 = 199 # Milioni di Euro [cite: 1]
+YIELD_APPROX_PROPOSTO = 7.0 # Basato sul DPS proposto di 0.27
+POLITICA_PAYOUT = ">= 80% FCF Normalizzato" #
+LEVA_FINE_2024 = 0.8 # Debt/EBITDA
+FCF_2024 = 199 # Milioni di Euro
 
-# Dati storici Dividendo Per Azione (DPS) - Fonte: Analisi_ENAV_C.md [cite: 1]
+# Dati storici Dividendo Per Azione (DPS) - Fonte: Analisi_ENAV_C.md
 # Esercizio -> Pagamento -> Valore
 dps_storico_data = {
     'Anno Esercizio': [2021, 2022, 2023],
@@ -94,14 +94,14 @@ dps_storico_data = {
 }
 df_dps = pd.DataFrame(dps_storico_data)
 
-# Dati Proiezione Dividendi - Fonte: Analisi_ENAV_C.md [cite: 1]
+# Dati Proiezione Dividendi - Fonte: Analisi_ENAV_C.md
 proj_dps_data = {
     'Anno Esercizio': [2024, 2025, 2026, 2027, 2028, 2029],
     'DPS Atteso (€)': [0.27, 0.28, 0.29, 0.30, 0.31, 0.32]
 }
 df_dps_proj = pd.DataFrame(proj_dps_data)
 
-# Dati Finanziari Chiave (Estratti da PDF TIKR - 31/12 date) [cite: 2]
+# Dati Finanziari Chiave (Estratti da PDF TIKR - 31/12 date)
 # Selezioniamo gli ultimi 3 anni per chiarezza
 fin_data = {
     'Metrica': [
@@ -141,24 +141,24 @@ fin_data = {
         0.95    # 298.3 / 313.2
     ],
      '2024 (Dati Analisi)': [
-        "1037 (Piano Ind.)", # [cite: 1]
-        "126 (Piano Ind.)", # [cite: 1]
+        "1037 (Piano Ind.)", #
+        "126 (Piano Ind.)", #
         "N/A",
-        "311 (Piano Ind.)", # [cite: 1]
-        FCF_2024,           # [cite: 1]
-        "258 (Piano Ind.)", # [cite: 1]
-        LEVA_FINE_2024      # [cite: 1]
+        "311 (Piano Ind.)", #
+        FCF_2024,           #
+        "258 (Piano Ind.)", #
+        LEVA_FINE_2024      #
      ]
 }
 df_fin = pd.DataFrame(fin_data)
 
 # Dati per copertura FCF/Dividendo (stimati dove necessario)
-# Dividendo totale = DPS * numero azioni (approx 541.5M dal PDF [cite: 2])
+# Dividendo totale = DPS * numero azioni (approx 541.5M dal PDF)
 num_azioni_approx = 541.5
 fcf_coverage_data = {
     'Anno': [2021, 2022, 2023, 2024],
-    'FCF (€M)': [-242.8, 139.1, 100.1, FCF_2024], # Dati PDF [cite: 2] e Analisi [cite: 1]
-    'DPS (€)': [0.1081, 0.1967, 0.2300, DPS_PROPOSTO_VAL], # Dati Analisi [cite: 1]
+    'FCF (€M)': [-242.8, 139.1, 100.1, FCF_2024], # Dati PDF e Analisi
+    'DPS (€)': [0.1081, 0.1967, 0.2300, DPS_PROPOSTO_VAL], # Dati Analisi
     'Dividendo Totale Stimato (€M)': [
         0.1081 * num_azioni_approx,
         0.1967 * num_azioni_approx,
@@ -174,7 +174,7 @@ df_fcf_coverage.replace([np.inf, -np.inf], np.nan, inplace=True)
 
 # --- Titolo e Header ---
 st.title(f"✈️ Analisi Dividendi: {NOME_SOCIETA} ({TICKER})")
-st.caption(f"Analisi basata sui dati del Piano Industriale 2025-2029[cite: 1], dati finanziari storici fino al 31/12/2023 [cite: 2] e file di analisi[cite: 1].")
+st.caption(f"Analisi basata sui dati del Piano Industriale 2025-2029, dati finanziari storici fino al 31/12/2023 e file di analisi.")
 st.markdown("---")
 
 # --- Metriche Chiave Dividendo ---
@@ -184,25 +184,25 @@ with cols_metrics[0]:
     st.metric(
         label=f"Ultimo DPS Pagato (Esercizio {ANNO_ULTIMO_DPS})",
         value=f"€ {ULTIMO_DPS_PAGATO_VAL:.4f}",
-        help="Dividendo pagato nel 2024 relativo all'esercizio 2023. [cite: 1]"
+        help="Dividendo pagato nel 2024 relativo all'esercizio 2023."
     )
 with cols_metrics[1]:
     st.metric(
         label=f"DPS Proposto (Esercizio {ANNO_DPS_PROPOSTO})",
         value=f"€ {DPS_PROPOSTO_VAL:.4f}",
-        help="Dividendo proposto per l'esercizio 2024 (pagamento nel 2025), come da Piano Industriale. [cite: 1]"
+        help="Dividendo proposto per l'esercizio 2024 (pagamento nel 2025), come da Piano Industriale."
     )
 with cols_metrics[2]:
     st.metric(
         label=f"Dividend Yield (Stimato su DPS {DPS_PROPOSTO_VAL:.2f}€)",
         value=f"~ {YIELD_APPROX_PROPOSTO:.1f}%",
-        help=f"Rendimento stimato basato sul dividendo proposto per l'esercizio 2024. Il rendimento effettivo dipenderà dal prezzo dell'azione al momento dello stacco. [cite: 1]"
+        help=f"Rendimento stimato basato sul dividendo proposto per l'esercizio 2024. Il rendimento effettivo dipenderà dal prezzo dell'azione al momento dello stacco."
     )
 with cols_metrics[3]:
     st.metric(
         label="Politica di Payout",
         value=POLITICA_PAYOUT,
-        help="Politica dichiarata dalla società per la distribuzione del Free Cash Flow normalizzato. [cite: 1]"
+        help="Politica dichiarata dalla società per la distribuzione del Free Cash Flow normalizzato."
     )
 st.markdown("---")
 
@@ -257,7 +257,7 @@ with tabs[0]:
 
         st.plotly_chart(fig_dps_storico, use_container_width=True)
         st.plotly_chart(fig_dps_bar, use_container_width=True)
-        st.caption("Fonte: Dati estratti da Analisi_ENAV_C.md[cite: 1]. Si nota la ripresa e crescita del dividendo post-pandemia.")
+        st.caption("Fonte: Dati estratti da Analisi_ENAV_C.md. Si nota la ripresa e crescita del dividendo post-pandemia.")
 
     with col2:
         # --- Grafico Proiezioni DPS ---
@@ -303,7 +303,7 @@ with tabs[0]:
         )
 
         st.plotly_chart(fig_dps_proj, use_container_width=True)
-        st.caption(f"Fonte: Dati estratti da Analisi_ENAV_C.md[cite: 1]. Il piano industriale prevede una crescita annua composta (CAGR) di circa il {cagr_proj:.1f}% per il dividendo nel periodo 2024-2029.")
+        st.caption(f"Fonte: Dati estratti da Analisi_ENAV_C.md. Il piano industriale prevede una crescita annua composta (CAGR) di circa il {cagr_proj:.1f}% per il dividendo nel periodo 2024-2029.")
 
 # TAB 2: Sostenibilità del Dividendo
 with tabs[1]:
@@ -369,8 +369,8 @@ with tabs[1]:
         fig_fcf_cov.add_hline(y=1.0, line_dash="dash", line_color="red", annotation_text="Copertura 1x", annotation_position="bottom right", secondary_y=True)
 
         st.plotly_chart(fig_fcf_cov, use_container_width=True)
-        st.caption("Fonte: FCF da PDF TIKR [cite: 2] e Analisi[cite: 1], Dividendo Totale calcolato (DPS [cite: 1] * 541.5M azioni [cite: 2]). Il FCF 2021 riportato nel PDF [cite: 2] è anomalo. Nel 2024[cite: 1], il FCF (€199M) copre ampiamente il dividendo proposto (€0.27 * 541.5M ≈ €146M), con un rapporto di copertura > 1.3x.")
-        st.warning("Nota: I dati FCF storici dal PDF TIKR [cite: 2] presentano anomalie, in particolare per il 2021. La sostenibilità si basa maggiormente sui dati 2023 e sulle proiezioni del piano 2024-2029[cite: 1].")
+        st.caption("Fonte: FCF da PDF TIKR e Analisi, Dividendo Totale calcolato (DPS * 541.5M azioni). Il FCF 2021 riportato nel PDF è anomalo. Nel 2024, il FCF (€199M) copre ampiamente il dividendo proposto (€0.27 * 541.5M ≈ €146M), con un rapporto di copertura > 1.3x.")
+        st.warning("Nota: I dati FCF storici dal PDF TIKR presentano anomalie, in particolare per il 2021. La sostenibilità si basa maggiormente sui dati 2023 e sulle proiezioni del piano 2024-2029.")
 
     with col2:
         st.subheader("⚖️ Payout Ratio e Leva Finanziaria")
@@ -447,7 +447,7 @@ with tabs[1]:
         fig_pay_lev.update_yaxes(tickformat=".2f", row=2, col=1)
 
         st.plotly_chart(fig_pay_lev, use_container_width=True)
-        st.caption("Payout Ratio calcolato su Utile Netto (Fonte PDF [cite: 2]). Leva Finanziaria da PDF [cite: 2] e Analisi[cite: 1]. Si nota il payout su utile netto superiore al 100% nel 2023, indicando che il dividendo è guidato più dal FCF (come da politica [cite: 1]) che dall'utile contabile. La leva è in miglioramento e si prevede scenda ulteriormente[cite: 1].")
+        st.caption("Payout Ratio calcolato su Utile Netto (Fonte PDF). Leva Finanziaria da PDF e Analisi. Si nota il payout su utile netto superiore al 100% nel 2023, indicando che il dividendo è guidato più dal FCF (come da politica) che dall'utile contabile. La leva è in miglioramento e si prevede scenda ulteriormente.")
 
 
 # TAB 3: Dati Finanziari Chiave
@@ -476,13 +476,13 @@ with tabs[2]:
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
     st.plotly_chart(fig_trends, use_container_width=True)
-    st.caption("Fonte: Dati PDF TIKR[cite: 2]. Ricavi, EBITDA e Utile Netto mostrano un trend di crescita. FCF mostra volatilità, con un dato 2021 anomalo.")
+    st.caption("Fonte: Dati PDF TIKR. Ricavi, EBITDA e Utile Netto mostrano un trend di crescita. FCF mostra volatilità, con un dato 2021 anomalo.")
 
 
     st.subheader("🔢 Tabella Finanziaria Riassuntiva (Ultimi Anni e Dati Piano 2024)")
     # Mostra la tabella con dati fino al 2024 (da piano)
     st.dataframe(df_fin.set_index('Metrica'), use_container_width=True)
-    st.caption("Fonte: Dati 2021-2023 da PDF TIKR[cite: 2], Dati 2024 da Piano Industriale/Analisi[cite: 1]. Leva 2021-23 calcolata da dati PDF, 2024 da Analisi. FCF 2021 anomalo.")
+    st.caption("Fonte: Dati 2021-2023 da PDF TIKR, Dati 2024 da Piano Industriale/Analisi. Leva 2021-23 calcolata da dati PDF, 2024 da Analisi. FCF 2021 anomalo.")
 
 
 # TAB 4: Analisi Completa (Testo)
@@ -492,92 +492,115 @@ with tabs[3]:
     analysis_content = ""
     try:
         # Leggi il contenuto del file markdown
-        with open('Analisi_ENAV_C.md', 'r', encoding='utf-8') as f:
-            analysis_content = f.read()
-            # Rimuove i tag [source: ...] dal testo se presenti (non sono nel file caricato)
-            analysis_content = re.sub(r'\s*\[source:\s*\d+.*?\]', '', analysis_content)
-            # Rimuove i tag dal testo se presenti (aggiunti da me)
-            analysis_content = re.sub(r'\s*\', '', analysis_content)
+        # Assicurati che il file 'Analisi_ENAV_C.md' sia nella stessa directory dello script Python
+        if os.path.exists('Analisi_ENAV_C.md'):
+            with open('Analisi_ENAV_C.md', 'r', encoding='utf-8') as f:
+                analysis_content = f.read()
+                # Rimuove i tag [source: ...] o se presenti (non dovrebbero esserci nel file originale)
+                analysis_content = re.sub(r'\s*\[(source|cite):\s*\d+.*?\]', '', analysis_content)
 
-        # Suddivisione approssimativa basata sui titoli markdown (## o ###)
-        sections = {}
-        current_section = "Introduzione / Sommario" # Default per il testo iniziale
-        sections[current_section] = ""
+            # Suddivisione approssimativa basata sui titoli markdown (## o ###)
+            sections = {}
+            current_section = "Introduzione / Sommario" # Default per il testo iniziale
+            sections[current_section] = ""
 
-        # Regex per trovare i titoli principali (## Titolo o # Titolo) e i sottotitoli numerati (## N. Titolo)
-        # Modificato per catturare anche ###
-        title_pattern = re.compile(r"^(#+)\s*(\d*\.?\s*\*?.*?\*?)$", re.MULTILINE)
+            # Regex per trovare i titoli principali (## Titolo o # Titolo) e i sottotitoli numerati (## N. Titolo)
+            # Modificato per catturare anche ###
+            title_pattern = re.compile(r"^(#+)\s*(\d*\.?\s*\*?.*?\*?)$", re.MULTILINE)
 
-        last_index = 0
-        for match in title_pattern.finditer(analysis_content):
-            level = len(match.group(1)) # Numero di #
-            title = match.group(2).strip().replace('*','').strip()
-            start_index = match.start()
+            last_index = 0
+            for match in title_pattern.finditer(analysis_content):
+                level = len(match.group(1)) # Numero di #
+                title = match.group(2).strip().replace('*','').strip()
+                start_index = match.start()
 
-            # Aggiunge il testo precedente alla sezione corrente
-            sections[current_section] += analysis_content[last_index:start_index].strip() + "\n\n"
+                # Aggiunge il testo precedente alla sezione corrente
+                sections[current_section] += analysis_content[last_index:start_index].strip() + "\n\n"
 
-            # Pulisce il titolo
-            clean_title = re.sub(r"^\d+\.\s+", "", title) # Rimuove numeri iniziali
-            current_section = clean_title
-            sections[current_section] = "" # Inizia una nuova sezione
-            last_index = match.end()
+                # Pulisce il titolo
+                clean_title = re.sub(r"^\d+\.\s+", "", title) # Rimuove numeri iniziali
+                current_section = clean_title
+                sections[current_section] = "" # Inizia una nuova sezione
+                last_index = match.end()
 
-        # Aggiunge l'ultimo pezzo di testo all'ultima sezione
-        sections[current_section] += analysis_content[last_index:].strip()
+            # Aggiunge l'ultimo pezzo di testo all'ultima sezione
+            sections[current_section] += analysis_content[last_index:].strip()
 
-        # Visualizza le sezioni con expander
-        st.markdown("Espandi le sezioni per leggere l'analisi completa fornita nel file `Analisi_ENAV_C.md`.")
-        # Espandi le prime sezioni di default
-        expanded_sections = ["Introduzione / Sommario", "Executive Summary", "1. Storico dei Dividendi e Rendimento"]
+            # Visualizza le sezioni con expander
+            st.markdown("Espandi le sezioni per leggere l'analisi completa fornita nel file `Analisi_ENAV_C.md`.")
+            # Espandi le prime sezioni di default
+            expanded_sections = ["Introduzione / Sommario", "Executive Summary", "1. Storico dei Dividendi e Rendimento"]
 
-        for title, content in sections.items():
-            if content.strip(): # Mostra solo sezioni con contenuto
-                 # Pulisci ulteriormente il titolo per l'ID dell'expander
-                expander_title = title.replace(":", "").replace("?", "").replace("/", "-")
-                is_expanded = any(sub in expander_title for sub in expanded_sections)
+            for title, content in sections.items():
+                if content.strip(): # Mostra solo sezioni con contenuto
+                     # Pulisci ulteriormente il titolo per l'ID dell'expander
+                    expander_title = title.replace(":", "").replace("?", "").replace("/", "-")
+                    is_expanded = any(sub in expander_title for sub in expanded_sections)
 
-                with st.expander(f"**{title}**", expanded=is_expanded):
-                    # Sostituisce le tabelle Markdown con HTML per st.markdown
-                    # Questo è un tentativo base, tabelle complesse potrebbero non rendere perfettamente
-                    content_html = content.replace('\n|', '\n| ') # Assicura spazi per split
-                    lines = content_html.split('\n')
-                    in_table = False
-                    table_html = ""
-                    processed_content = ""
+                    with st.expander(f"**{title}**", expanded=is_expanded):
+                        # Sostituisce le tabelle Markdown con HTML per st.markdown
+                        # Questo è un tentativo base, tabelle complesse potrebbero non rendere perfettamente
+                        content_html = content.replace('\n|', '\n| ') # Assicura spazi per split
+                        lines = content_html.split('\n')
+                        in_table = False
+                        table_html = ""
+                        processed_content = ""
 
-                    for line in lines:
-                        if line.strip().startswith('|') and line.strip().endswith('|'):
-                            if not in_table:
-                                in_table = True
-                                table_html = "<table>\n"
-                                # Gestione header
-                                headers = [h.strip() for h in line.strip().strip('|').split('|')]
-                                table_html += "  <thead>\n    <tr>\n"
-                                for header in headers:
-                                    table_html += f"      <th>{header}</th>\n"
-                                table_html += "    </tr>\n  </thead>\n  <tbody>\n"
-                            elif '---' not in line: # Ignora la linea separatrice
-                                cells = [c.strip() for c in line.strip().strip('|').split('|')]
-                                table_html += "    <tr>\n"
-                                for cell in cells:
-                                     # Rimuovi eventuali ** markdown per il grassetto
-                                    cell_clean = cell.replace('**', '')
-                                    table_html += f"      <td>{cell_clean}</td>\n"
-                                table_html += "    </tr>\n"
-                        else:
-                            if in_table:
-                                in_table = False
-                                table_html += "  </tbody>\n</table>\n"
-                                processed_content += table_html
-                                table_html = ""
-                            processed_content += line + "\n"
+                        for line in lines:
+                            line_stripped = line.strip()
+                            if line_stripped.startswith('|') and line_stripped.endswith('|'):
+                                if not in_table:
+                                    # Controlla se è la riga separatore prima di iniziare la tabella
+                                    if '---' in line_stripped:
+                                        processed_content += line + "\n" # Mantieni la riga markdown se non è una tabella valida
+                                        continue # Salta questa riga se è solo separatore senza header
 
-                    if in_table: # Chiudi la tabella se il file finisce con essa
-                         table_html += "  </tbody>\n</table>\n"
-                         processed_content += table_html
+                                    in_table = True
+                                    table_html = "<div style='overflow-x:auto;'><table style='width:100%; border-collapse: collapse; border: 1px solid #ddd;'>\n"
+                                    # Gestione header
+                                    headers = [h.strip() for h in line_stripped.strip('|').split('|')]
+                                    table_html += "  <thead style='background-color: #f2f2f2;'>\n    <tr>\n"
+                                    for header in headers:
+                                        table_html += f"      <th style='border: 1px solid #ddd; padding: 8px; text-align: left;'>{header}</th>\n"
+                                    table_html += "    </tr>\n  </thead>\n  <tbody>\n"
+                                # Ignora la linea separatore ' |---|---| '
+                                elif '---' not in line_stripped:
+                                    cells = [c.strip() for c in line_stripped.strip('|').split('|')]
+                                    table_html += "    <tr>\n"
+                                    for cell in cells:
+                                         # Rimuovi eventuali ** markdown per il grassetto e applica stile
+                                        cell_clean = cell.replace('**', '')
+                                        style = " style='border: 1px solid #ddd; padding: 8px;'"
+                                        if cell != cell_clean: # Era grassetto
+                                             style = " style='border: 1px solid #ddd; padding: 8px; font-weight: bold;'"
 
-                    st.markdown(processed_content, unsafe_allow_html=True)
+                                        table_html += f"      <td{style}>{cell_clean}</td>\n"
+                                    table_html += "    </tr>\n"
+                            else:
+                                if in_table:
+                                    in_table = False
+                                    table_html += "  </tbody>\n</table></div>\n"
+                                    processed_content += table_html
+                                    table_html = ""
+                                processed_content += line + "\n"
+
+                        if in_table: # Chiudi la tabella se il file finisce con essa
+                             table_html += "  </tbody>\n</table></div>\n"
+                             processed_content += table_html
+
+                        # Sostituisci ### con h4 e ## con h3 per una migliore gerarchia HTML
+                        processed_content = re.sub(r'^### (.*?)$', r'<h4>\1</h4>', processed_content, flags=re.MULTILINE)
+                        processed_content = re.sub(r'^## (.*?)$', r'<h3>\1</h3>', processed_content, flags=re.MULTILINE)
+                        # Converti liste markdown in HTML
+                        processed_content = re.sub(r'^\* (.*?)$', r'<li>\1</li>', processed_content, flags=re.MULTILINE)
+                        processed_content = re.sub(r'^\- (.*?)$', r'<li>\1</li>', processed_content, flags=re.MULTILINE)
+                        processed_content = re.sub(r'(<li>.*?</li>\n?)+', r'<ul>\g</ul>', processed_content, flags=re.DOTALL)
+
+
+                        st.markdown(processed_content, unsafe_allow_html=True)
+        else:
+             st.error("Errore: File 'Analisi_ENAV_C.md' non trovato nella directory dell'app.")
+             analysis_content = "Contenuto dell'analisi non disponibile (file non trovato)."
 
 
     except FileNotFoundError:
@@ -590,18 +613,18 @@ with tabs[3]:
 # TAB 5: Rischi Principali
 with tabs[4]:
     st.header("🚨 Principali Rischi da Considerare")
-    st.markdown("I seguenti rischi sono stati evidenziati nel documento di analisi[cite: 1]:")
+    st.markdown("I seguenti rischi sono stati evidenziati nel documento di analisi:")
 
     st.warning("""
     * **Rischi Regolatori:**
         * Cambiamenti nei parametri regolatori (es. WACC, tariffe) potrebbero influenzare la redditività.
-        * Il "reset regolatorio" (come quello per RP4, 2025-2029) causa una temporanea, ma fisiologica, flessione dei risultati all'inizio del periodo. [cite: 1]
+        * Il "reset regolatorio" (come quello per RP4, 2025-2029) causa una temporanea, ma fisiologica, flessione dei risultati all'inizio del periodo.
     * **Rischi di Traffico:**
         * Eventi straordinari (pandemie, crisi geopolitiche, disastri naturali) possono impattare significativamente i volumi di traffico aereo.
-        * Esistono meccanismi di compensazione regolatori nel medio termine, ma shock acuti possono avere effetti immediati. [cite: 1]
+        * Esistono meccanismi di compensazione regolatori nel medio termine, ma shock acuti possono avere effetti immediati.
     * **Rischi Esecutivi:**
-        * Rischio nell'esecuzione dei piani di crescita, specialmente nelle attività non regolamentate (espansione internazionale, droni, servizi digitali). [cite: 1]
-        * Rischi legati all'integrazione di eventuali acquisizioni (M&A) pianificate (€350M allocati nel piano). [cite: 1]
+        * Rischio nell'esecuzione dei piani di crescita, specialmente nelle attività non regolamentate (espansione internazionale, droni, servizi digitali).
+        * Rischi legati all'integrazione di eventuali acquisizioni (M&A) pianificate (€350M allocati nel piano).
     * **Altri Rischi:**
         * Rischi operativi (scioperi, guasti tecnologici).
         * Rischi legati alla sostenibilità e agli obiettivi ESG.
@@ -610,30 +633,30 @@ with tabs[4]:
 
     st.info("""
     **Contesto RP4 (Reset Regolatorio 2025):**
-    L'analisi [cite: 1] evidenzia un previsto calo dell'EBITDA nel 2025 (-28% vs 2024) dovuto al reset dei parametri regolatori. Questo è un effetto tecnico atteso e non dovrebbe compromettere la crescita del dividendo pianificata, grazie alla solida generazione di cassa e alla politica di payout basata sul FCF. L'EBITDA è previsto poi recuperare e crescere significativamente fino al 2029. [cite: 1]
+    L'analisi evidenzia un previsto calo dell'EBITDA nel 2025 (-28% vs 2024) dovuto al reset dei parametri regolatori. Questo è un effetto tecnico atteso e non dovrebbe compromettere la crescita del dividendo pianificata, grazie alla solida generazione di cassa e alla politica di payout basata sul FCF. L'EBITDA è previsto poi recuperare e crescere significativamente fino al 2029.
     """, icon="ℹ️")
 
 # --- Conclusioni Specifiche per Investitore Dividend ---
 st.markdown("---")
 st.subheader("🎯 Conclusioni per l'Investitore Orientato ai Dividendi (Basate sull'Analisi)")
 st.markdown(f"""
-Basato sull'analisi fornita nel file `Analisi_ENAV_C.md`[cite: 1]:
+Basato sull'analisi fornita nel file `Analisi_ENAV_C.md`:
 
 **Punti di Forza (Pro-Dividendo):**
-* ✅ **Politica Dividendi Chiara e Generosa:** Payout target esplicito >= 80% del FCF normalizzato, con forte impegno del management alla remunerazione. [cite: 1]
-* ✅ **Yield Attraente:** Rendimento stimato sul dividendo proposto per il 2024 (~7%) competitivo nel panorama delle utility e del mercato italiano. [cite: 1]
-* ✅ **Crescita Prevista del Dividendo:** Il Piano Industriale 2025-2029 delinea una traiettoria di crescita annua costante del DPS (+4% CAGR circa). [cite: 1]
-* ✅ **Solidità del Business Regolato:** Il core business garantisce flussi di cassa stabili e prevedibili, protetti da meccanismi regolatori (es. inflazione, traffico, WACC più alto in RP4). [cite: 1]
-* ✅ **Forte Generazione di Cassa:** Previsto FCF cumulato di ~€1 miliardo nel 2025-2029, sufficiente a coprire dividendi (€813M) e investimenti, permettendo anche l'azzeramento del debito. [cite: 1]
-* ✅ **Bassa Leva Finanziaria:** Rapporto Net Debt/EBITDA basso (0.8x a fine 2024) e in ulteriore riduzione, garantendo flessibilità finanziaria. [cite: 1]
+* ✅ **Politica Dividendi Chiara e Generosa:** Payout target esplicito >= 80% del FCF normalizzato, con forte impegno del management alla remunerazione.
+* ✅ **Yield Attraente:** Rendimento stimato sul dividendo proposto per il 2024 (~7%) competitivo nel panorama delle utility e del mercato italiano.
+* ✅ **Crescita Prevista del Dividendo:** Il Piano Industriale 2025-2029 delinea una traiettoria di crescita annua costante del DPS (+4% CAGR circa).
+* ✅ **Solidità del Business Regolato:** Il core business garantisce flussi di cassa stabili e prevedibili, protetti da meccanismi regolatori (es. inflazione, traffico, WACC più alto in RP4).
+* ✅ **Forte Generazione di Cassa:** Previsto FCF cumulato di ~€1 miliardo nel 2025-2029, sufficiente a coprire dividendi (€813M) e investimenti, permettendo anche l'azzeramento del debito.
+* ✅ **Bassa Leva Finanziaria:** Rapporto Net Debt/EBITDA basso (0.8x a fine 2024) e in ulteriore riduzione, garantendo flessibilità finanziaria.
 
 **Rischi e Considerazioni (Contro-Dividendo):**
-* ⚠️ **Reset Regolatorio 2025:** Impatto negativo sull'EBITDA nel primo anno del nuovo periodo (2025), sebbene non si preveda un impatto sulla crescita del dividendo. [cite: 1]
-* ⚠️ **Dipendenza dal Traffico Aereo:** Sensibilità a shock esterni che influenzano i volumi di volo, anche se mitigata da meccanismi regolatori. [cite: 1]
-* ⚠️ **Esecuzione Crescita Non Regolata:** Il successo nell'espansione dei business non regolati (che hanno margini potenzialmente diversi) è cruciale per la crescita futura oltre il perimetro regolato. [cite: 1]
-* ⚠️ **Execution Risk M&A:** L'eventuale utilizzo della capacità di debito per M&A introduce rischi di integrazione e valutazione. [cite: 1]
+* ⚠️ **Reset Regolatorio 2025:** Impatto negativo sull'EBITDA nel primo anno del nuovo periodo (2025), sebbene non si preveda un impatto sulla crescita del dividendo.
+* ⚠️ **Dipendenza dal Traffico Aereo:** Sensibilità a shock esterni che influenzano i volumi di volo, anche se mitigata da meccanismi regolatori.
+* ⚠️ **Esecuzione Crescita Non Regolata:** Il successo nell'espansione dei business non regolati (che hanno margini potenzialmente diversi) è cruciale per la crescita futura oltre il perimetro regolato.
+* ⚠️ **Execution Risk M&A:** L'eventuale utilizzo della capacità di debito per M&A introduce rischi di integrazione e valutazione.
 
-**In Sintesi:** ENAV appare come un investimento "core" per chi cerca un dividendo elevato, crescente e sostenibile, supportato da un business regolato solido e da una gestione finanziaria prudente. I rischi principali sono legati a fattori macro/settoriali (traffico) e all'esecuzione della strategia di crescita, ma la visibilità sui dividendi futuri data dal piano industriale è un elemento distintivo positivo. [cite: 1]
+**In Sintesi:** ENAV appare come un investimento "core" per chi cerca un dividendo elevato, crescente e sostenibile, supportato da un business regolato solido e da una gestione finanziaria prudente. I rischi principali sono legati a fattori macro/settoriali (traffico) e all'esecuzione della strategia di crescita, ma la visibilità sui dividendi futuri data dal piano industriale è un elemento distintivo positivo.
 """, unsafe_allow_html=True)
 
 # Footer con disclaimer
