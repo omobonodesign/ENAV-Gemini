@@ -67,6 +67,37 @@ def set_page_style():
         font-size: 1.5em;
         font-weight: bold;
     }
+    /* Styling per tabelle HTML generate da Markdown */
+    div.stMarkdown table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #ddd;
+        margin-bottom: 1em; /* Aggiunge spazio sotto la tabella */
+    }
+    div.stMarkdown th {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        background-color: #e1eafc; /* Sfondo header blu chiaro */
+        color: #0d47a1; /* Testo header blu scuro */
+        font-weight: bold;
+    }
+    div.stMarkdown td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    div.stMarkdown tr:nth-child(even) {
+        background-color: #f9f9f9; /* Righe alterne leggermente grigie */
+    }
+    div.stMarkdown ul {
+       margin-left: 20px; /* Indenta le liste */
+       margin-bottom: 1em;
+    }
+     div.stMarkdown li {
+       margin-bottom: 0.3em; /* Spazio tra elementi lista */
+    }
+
 
     </style>
     """, unsafe_allow_html=True)
@@ -386,7 +417,13 @@ with tabs[1]:
                                         df_fcf_coverage.loc[2, 'Dividendo Totale Stimato (€M)']]
         }
         df_payout = pd.DataFrame(payout_data)
-        df_payout['Payout Ratio su Utile Netto (%)'] = (df_payout['Dividendo Totale (€M)'] / df_payout['Utile Netto (€M)']) * 100
+        # Evita divisione per zero o NaN se Utile Netto è 0 o non numerico
+        df_payout['Payout Ratio su Utile Netto (%)'] = np.where(
+            pd.to_numeric(df_payout['Utile Netto (€M)'], errors='coerce') != 0,
+            (df_payout['Dividendo Totale (€M)'] / pd.to_numeric(df_payout['Utile Netto (€M)'], errors='coerce')) * 100,
+            np.nan
+        )
+
 
         # Leva finanziaria
         leva_data = {
@@ -458,8 +495,12 @@ with tabs[2]:
     # Estrarre dati per grafico trend
     metrics_to_plot = ['Ricavi Totali (€M)', 'EBITDA (€M)', 'Utile Netto (€M)', 'Free Cash Flow (FCF, €M)']
     df_fin_plot = df_fin[df_fin['Metrica'].isin(metrics_to_plot)].set_index('Metrica')[['2021', '2022', '2023']]
-    df_fin_plot = df_fin_plot.apply(pd.to_numeric, errors='coerce') # Converti in numerico, ignora errori (per N/A)
+    # Converti in numerico, gestendo errori e possibili stringhe come 'N/A'
+    for col in df_fin_plot.columns:
+        df_fin_plot[col] = pd.to_numeric(df_fin_plot[col], errors='coerce')
+
     df_fin_plot = df_fin_plot.transpose() # Anni come righe
+    df_fin_plot.index = df_fin_plot.index.astype(int) # Assicura che l'indice sia numerico per il plot
     df_fin_plot.index.name = 'Anno'
     df_fin_plot.reset_index(inplace=True)
 
@@ -490,13 +531,15 @@ with tabs[3]:
     st.header("📝 Analisi Dettagliata ENAV (da file .md)")
 
     analysis_content = ""
+    # Usa un percorso relativo standard
+    analysis_file_path = 'Analisi_ENAV_C.md'
+
     try:
         # Leggi il contenuto del file markdown
-        # Assicurati che il file 'Analisi_ENAV_C.md' sia nella stessa directory dello script Python
-        if os.path.exists('Analisi_ENAV_C.md'):
-            with open('Analisi_ENAV_C.md', 'r', encoding='utf-8') as f:
+        if os.path.exists(analysis_file_path):
+            with open(analysis_file_path, 'r', encoding='utf-8') as f:
                 analysis_content = f.read()
-                # Rimuove i tag [source: ...] o se presenti (non dovrebbero esserci nel file originale)
+                # Rimuove i tag [source: ...] o se presenti
                 analysis_content = re.sub(r'\s*\[(source|cite):\s*\d+.*?\]', '', analysis_content)
 
             # Suddivisione approssimativa basata sui titoli markdown (## o ###)
@@ -504,8 +547,6 @@ with tabs[3]:
             current_section = "Introduzione / Sommario" # Default per il testo iniziale
             sections[current_section] = ""
 
-            # Regex per trovare i titoli principali (## Titolo o # Titolo) e i sottotitoli numerati (## N. Titolo)
-            # Modificato per catturare anche ###
             title_pattern = re.compile(r"^(#+)\s*(\d*\.?\s*\*?.*?\*?)$", re.MULTILINE)
 
             last_index = 0
@@ -517,98 +558,122 @@ with tabs[3]:
                 # Aggiunge il testo precedente alla sezione corrente
                 sections[current_section] += analysis_content[last_index:start_index].strip() + "\n\n"
 
-                # Pulisce il titolo
                 clean_title = re.sub(r"^\d+\.\s+", "", title) # Rimuove numeri iniziali
                 current_section = clean_title
                 sections[current_section] = "" # Inizia una nuova sezione
                 last_index = match.end()
 
-            # Aggiunge l'ultimo pezzo di testo all'ultima sezione
-            sections[current_section] += analysis_content[last_index:].strip()
+            sections[current_section] += analysis_content[last_index:].strip() # Aggiunge l'ultimo pezzo
 
             # Visualizza le sezioni con expander
-            st.markdown("Espandi le sezioni per leggere l'analisi completa fornita nel file `Analisi_ENAV_C.md`.")
-            # Espandi le prime sezioni di default
+            st.markdown(f"Espandi le sezioni per leggere l'analisi completa fornita nel file `{analysis_file_path}`.")
             expanded_sections = ["Introduzione / Sommario", "Executive Summary", "1. Storico dei Dividendi e Rendimento"]
 
             for title, content in sections.items():
-                if content.strip(): # Mostra solo sezioni con contenuto
-                     # Pulisci ulteriormente il titolo per l'ID dell'expander
+                if content.strip():
                     expander_title = title.replace(":", "").replace("?", "").replace("/", "-")
                     is_expanded = any(sub in expander_title for sub in expanded_sections)
 
                     with st.expander(f"**{title}**", expanded=is_expanded):
-                        # Sostituisce le tabelle Markdown con HTML per st.markdown
-                        # Questo è un tentativo base, tabelle complesse potrebbero non rendere perfettamente
-                        content_html = content.replace('\n|', '\n| ') # Assicura spazi per split
-                        lines = content_html.split('\n')
-                        in_table = False
-                        table_html = ""
-                        processed_content = ""
+                        # ---- Inizio Blocco Conversione Markdown -> HTML ----
+                        processed_content = content
+                        # Converti Headers
+                        processed_content = re.sub(r'^### (.*?)$', r'<h4>\1</h4>', processed_content, flags=re.MULTILINE)
+                        processed_content = re.sub(r'^## (.*?)$', r'<h3>\1</h3>', processed_content, flags=re.MULTILINE)
+                        processed_content = re.sub(r'^# (.*?)$', r'<h1>\1</h1>', processed_content, flags=re.MULTILINE) # Anche H1 se presente
 
+                        # Converti Grassetto
+                        processed_content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', processed_content)
+                        processed_content = re.sub(r'__(.*?)__', r'<strong>\1</strong>', processed_content)
+
+                        # Converti Corsivo
+                        processed_content = re.sub(r'\*(.*?)\*', r'<em>\1</em>', processed_content)
+                        processed_content = re.sub(r'_(.*?)_', r'<em>\1</em>', processed_content)
+
+                         # Converti Liste NON annidate (semplice)
+                        processed_content = re.sub(r'^[\*\-\+] (.*?)$', r'<li>\1</li>', processed_content, flags=re.MULTILINE)
+                        # Raggruppa <li> consecutive in <ul>
+                        # CORREZIONE: Usa \0 invece di \g
+                        processed_content = re.sub(r'(?:<li>.*?</li>\s*)+', r'<ul>\0</ul>', processed_content, flags=re.DOTALL)
+                        # Rimuovi eventuali tag <p> inseriti automaticamente da Streamlit attorno alle liste
+                        processed_content = processed_content.replace('<p><ul>', '<ul>').replace('</ul></p>', '</ul>')
+
+
+                        # Converti Tabelle Markdown Semplici in HTML
+                        lines = processed_content.split('\n')
+                        output_lines = []
+                        in_table = False
                         for line in lines:
                             line_stripped = line.strip()
                             if line_stripped.startswith('|') and line_stripped.endswith('|'):
-                                if not in_table:
-                                    # Controlla se è la riga separatore prima di iniziare la tabella
-                                    if '---' in line_stripped:
-                                        processed_content += line + "\n" # Mantieni la riga markdown se non è una tabella valida
-                                        continue # Salta questa riga se è solo separatore senza header
-
-                                    in_table = True
-                                    table_html = "<div style='overflow-x:auto;'><table style='width:100%; border-collapse: collapse; border: 1px solid #ddd;'>\n"
-                                    # Gestione header
-                                    headers = [h.strip() for h in line_stripped.strip('|').split('|')]
-                                    table_html += "  <thead style='background-color: #f2f2f2;'>\n    <tr>\n"
-                                    for header in headers:
-                                        table_html += f"      <th style='border: 1px solid #ddd; padding: 8px; text-align: left;'>{header}</th>\n"
-                                    table_html += "    </tr>\n  </thead>\n  <tbody>\n"
-                                # Ignora la linea separatore ' |---|---| '
-                                elif '---' not in line_stripped:
-                                    cells = [c.strip() for c in line_stripped.strip('|').split('|')]
-                                    table_html += "    <tr>\n"
-                                    for cell in cells:
-                                         # Rimuovi eventuali ** markdown per il grassetto e applica stile
-                                        cell_clean = cell.replace('**', '')
-                                        style = " style='border: 1px solid #ddd; padding: 8px;'"
-                                        if cell != cell_clean: # Era grassetto
-                                             style = " style='border: 1px solid #ddd; padding: 8px; font-weight: bold;'"
-
-                                        table_html += f"      <td{style}>{cell_clean}</td>\n"
-                                    table_html += "    </tr>\n"
-                            else:
-                                if in_table:
+                                if '---' in line_stripped: # Riga separatore header
+                                    if in_table: # Deve seguire l'header
+                                        output_lines.append("</thead><tbody>")
+                                    else: # Separatore fuori posto? Mantieni com'è
+                                        output_lines.append(line)
+                                else: # Riga di dati o header
+                                    cells_md = [c.strip() for c in line_stripped.strip('|').split('|')]
+                                    if not in_table:
+                                        in_table = True
+                                        output_lines.append("<div style='overflow-x:auto;'><table class='dataframe'>") # Usa classe per CSS
+                                        output_lines.append("<thead><tr>")
+                                        for cell in cells_md:
+                                            output_lines.append(f"<th>{cell.replace('**', '')}</th>") # Rimuovi grassetto MD
+                                        output_lines.append("</tr>")
+                                        # Non chiudere thead qui, aspetta separatore
+                                    else: # Riga dati
+                                        output_lines.append("<tr>")
+                                        for cell in cells_md:
+                                             cell_clean = cell.replace('**', '') # Rimuovi grassetto MD
+                                             style_attr = " style='font-weight: bold;'" if cell != cell_clean else ""
+                                             output_lines.append(f"<td{style_attr}>{cell_clean}</td>")
+                                        output_lines.append("</tr>")
+                            else: # Riga non tabella
+                                if in_table: # Fine tabella
                                     in_table = False
-                                    table_html += "  </tbody>\n</table></div>\n"
-                                    processed_content += table_html
-                                    table_html = ""
-                                processed_content += line + "\n"
+                                    # Assicurati che tbody sia chiuso se è stato aperto
+                                    if output_lines[-1] != "</thead><tbody>":
+                                         output_lines.append("</tbody>") # Chiudi se c'erano righe dati
+                                    else: # Tabella solo header? Rimuovi thead/tbody
+                                        output_lines.pop() # Rimuovi "</thead><tbody>"
+                                        output_lines.insert(-len(cells_md)-2, "</thead>") # Inserisci chiusura thead
 
-                        if in_table: # Chiudi la tabella se il file finisce con essa
-                             table_html += "  </tbody>\n</table></div>\n"
-                             processed_content += table_html
+                                    output_lines.append("</table></div>")
+                                output_lines.append(line) # Aggiungi la riga corrente (non tabella)
 
-                        # Sostituisci ### con h4 e ## con h3 per una migliore gerarchia HTML
-                        processed_content = re.sub(r'^### (.*?)$', r'<h4>\1</h4>', processed_content, flags=re.MULTILINE)
-                        processed_content = re.sub(r'^## (.*?)$', r'<h3>\1</h3>', processed_content, flags=re.MULTILINE)
-                        # Converti liste markdown in HTML
-                        processed_content = re.sub(r'^\* (.*?)$', r'<li>\1</li>', processed_content, flags=re.MULTILINE)
-                        processed_content = re.sub(r'^\- (.*?)$', r'<li>\1</li>', processed_content, flags=re.MULTILINE)
-                        processed_content = re.sub(r'(<li>.*?</li>\n?)+', r'<ul>\g</ul>', processed_content, flags=re.DOTALL)
+                        if in_table: # Se il testo finisce con una tabella
+                             in_table = False
+                             if output_lines[-1] != "</thead><tbody>":
+                                 output_lines.append("</tbody>")
+                             else:
+                                 output_lines.pop()
+                                 output_lines.insert(-len(cells_md)-2, "</thead>")
+                             output_lines.append("</table></div>")
 
+                        processed_content = "\n".join(output_lines)
+                        # Sostituisci i newline con <br> eccetto che dentro tag specifici
+                        # Questo è complesso, proviamo un approccio più semplice:
+                        # st.markdown supporta newline, quindi potremmo non aver bisogno di <br> ovunque
+                        # Ma per sicurezza, aggiungiamo <br> solo tra paragrafi (doppio newline)
+                        processed_content = processed_content.replace('\n\n', '<br><br>')
+
+                        #---- Fine Blocco Conversione ----
 
                         st.markdown(processed_content, unsafe_allow_html=True)
         else:
-             st.error("Errore: File 'Analisi_ENAV_C.md' non trovato nella directory dell'app.")
+             st.error(f"Errore: File '{analysis_file_path}' non trovato. Assicurati che sia nella stessa cartella dello script.")
              analysis_content = "Contenuto dell'analisi non disponibile (file non trovato)."
 
-
     except FileNotFoundError:
-        st.error("Errore: File 'Analisi_ENAV_C.md' non trovato nella directory dell'app.")
+        st.error(f"Errore: File '{analysis_file_path}' non trovato. Assicurati che sia nella stessa cartella dello script.")
         analysis_content = "Contenuto dell'analisi non disponibile (file non trovato)."
     except Exception as e:
-        st.error(f"Errore nella lettura o elaborazione del file 'Analisi_ENAV_C.md': {e}")
-        analysis_content = "Errore nel caricamento del contenuto dell'analisi."
+        st.error(f"Errore nella lettura o elaborazione del file '{analysis_file_path}': {e}")
+        analysis_content = f"Errore nel caricamento o nella formattazione del contenuto dell'analisi: {e}"
+        # Se c'è un errore di formattazione, mostra il testo grezzo
+        if analysis_content and isinstance(analysis_content, str): # Verifica se analysis_content è stato letto
+             st.text_area("Contenuto grezzo del file (a causa dell'errore):", analysis_content, height=300)
+
 
 # TAB 5: Rischi Principali
 with tabs[4]:
@@ -668,6 +733,6 @@ with st.container():
         <p style="margin-bottom: 5px;">Le informazioni contenute in questa applicazione web sono generate automaticamente sulla base dei documenti forniti ('Analisi_ENAV_C.md', 'TIKR - ENAV - Financials (...).pdf') e sono presentate esclusivamente a scopo informativo generale e/o educativo. Non costituiscono e non devono essere interpretate come consulenza finanziaria, legale, fiscale o di investimento.</p>
         <p style="margin-bottom: 5px;">Investire nei mercati finanziari comporta rischi significativi, inclusa la possibilità di perdere l'intero capitale investito. Le performance passate non sono indicative né garanzia di risultati futuri. I dati finanziari storici (specialmente FCF) potrebbero presentare anomalie o richiedere reclassification/normalizzazione non effettuata in questa sede.</p>
         <p style="margin-bottom: 5px;">Si raccomanda vivamente di condurre la propria analisi approfondita (due diligence), verificare i dati da fonti ufficiali della società e consultare un consulente finanziario indipendente e qualificato prima di prendere qualsiasi decisione di investimento basata su queste informazioni.</p>
-        <p style="text-align: right; margin-top: 10px; font-style: italic;">Applicazione generata da AI.</p>
+        <p style="text-align: right; margin-top: 10px; font-style: italic;">Applicazione generata da "La Barba Sparlante" tramite l'utilizzo di Intelligenze Artificiali.</p>
     </div>
     """, unsafe_allow_html=True)
